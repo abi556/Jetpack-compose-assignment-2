@@ -1,5 +1,14 @@
 
 ---
+## 👤 Author
+
+**Abiy Hailu**  
+ID NO: UGR/8730/15  
+Section: 1  
+Addis Ababa University, Addis Ababa Institute of Technology, School of Information Technology Engineering
+
+---
+
 
 ## 🚀 How It Works
 
@@ -20,11 +29,3 @@
 
 ---
 
-## 👤 Author
-
-**Abiy Hailu**  
-ID NO: UGR/8730/15  
-Section: 1  
-Addis Ababa University, Addis Ababa Institute of Technology, School of Information Technology Engineering
-
----
