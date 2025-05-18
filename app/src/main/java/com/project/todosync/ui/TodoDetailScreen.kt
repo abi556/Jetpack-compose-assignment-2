@@ -1,6 +1,8 @@
 package com.project.todosync.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.todosync.data.model.TodoItem
+import androidx.compose.foundation.layout.WindowInsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,18 +31,30 @@ fun TodoDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Todo Details", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+            Surface(
+                shadowElevation = 8.dp,
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(3.dp, Color(0xFF00B0FF)),
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.statusBars),
+                tonalElevation = 8.dp,
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                TopAppBar(
+                    title = { Text("Todo Details", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 )
-            )
+            }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->

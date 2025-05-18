@@ -7,8 +7,10 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,6 +20,9 @@ import androidx.compose.ui.unit.sp
 import com.project.todosync.data.model.TodoItem
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.WindowInsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,72 +30,110 @@ fun TodoListScreen(
     viewModel: TodoListViewModel,
     onTodoClick: (Int) -> Unit
 ) {
-    val todos = viewModel.todos.collectAsState()
-    val loading = viewModel.loading.collectAsState()
-    val error = viewModel.error.collectAsState()
+    val todos by viewModel.todos.collectAsState()
+    val loading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "TODO List",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+            Surface(
+                shadowElevation = 8.dp,
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(3.dp, Color(0xFF00B0FF)),
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.statusBars),
+                tonalElevation = 8.dp,
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = "TODO List",
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
-            )
+            }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Box(modifier = Modifier
             .fillMaxSize()
             .padding(padding)) {
-            when {
-                loading.value -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
+            Column(modifier = Modifier.fillMaxSize()) {
+                if (error != null) {
+                    // Friendly offline banner with refresh icon
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text("Loading todos...", color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-                error.value != null -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = error.value ?: "Unknown error", color = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.refreshTodos() }) {
-                            Text("Retry")
+                        Text(
+                            text = "You're offline. Connect to the internet and tap refresh to update your todos.",
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(onClick = { viewModel.refreshTodos() }) {
+                            Icon(
+                                imageVector = Icons.Filled.Refresh,
+                                contentDescription = "Refresh",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
-                else -> {
-                    if (todos.value.isEmpty()) {
-                        Text(
-                            text = "No todos found.",
-                            modifier = Modifier.align(Alignment.Center),
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    } else {
-                        androidx.compose.foundation.lazy.LazyColumn(
+                when {
+                    loading && todos.isEmpty() -> {
+                        Column(
+                            modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text("Loading todos...", color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                    todos.isNotEmpty() -> {
+                        LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(MaterialTheme.colorScheme.background),
                             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            items(todos.value) { todo ->
+                            items(todos) { todo ->
                                 TodoListItem(todo = todo, onClick = { onTodoClick(todo.id) })
                             }
                         }
+                    }
+                    error != null -> {
+                        // Only show full error if there is NO data at all
+                        Column(
+                            modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = error ?: "Unknown error", color = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = { viewModel.refreshTodos() }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                    else -> {
+                        Text(
+                            text = "No todos found.",
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                 }
             }

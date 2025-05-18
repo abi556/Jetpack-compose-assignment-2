@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
                                 return TodoDetailViewModel(repository, todoId) as T
                             }
                         })
-                    }
+                }
                 )
             }
         }
